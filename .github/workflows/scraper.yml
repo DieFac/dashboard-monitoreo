@@ -2,7 +2,6 @@ name: Scrape Status Pages
 
 on:
   schedule:
-    # Ejecuta cada 5 minutos
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
@@ -10,14 +9,9 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
     
-    permissions:
-      contents: write
-      
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -25,26 +19,18 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install jsdom cheerio axios
+        run: npm install jsdom cheerio axios || true
 
       - name: Run scraper
-        run: node scripts/scraper.js
-
-      - name: Configure Git
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          mkdir -p data
+          node scripts/scraper.js
 
-      - name: Commit and push if changed
-        run: |
-          if [ -f data/status.json ]; then
-            git add data/status.json
-            if ! git diff --cached --quiet; then
-              git commit -m "Update status data - $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-              git push origin main
-            else
-              echo "No changes to commit"
-            fi
-          else
-            echo "status.json not found"
-          fi
+      - name: Commit and push
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: 'GitHub Actions'
+          author_email: 'actions@github.com'
+          message: 'Update status data'
+          add: 'data/status.json'
+          pull: '--rebase --autostash'
