@@ -56,7 +56,7 @@ export default async (req, res) => {
   
   try {
     const services = [
-      { id: 1, name: 'Azure Status', url: 'https://azure.microsoft.com/en-us/status' },
+      { id: 1, name: 'Azure Status', url: 'https://status.azure.com' },
       { id: 2, name: 'Microsoft 365', url: 'https://status.cloud.microsoft.com/m365' },
       { id: 3, name: 'Citrix Cloud', url: 'https://status.cloud.com/' },
       { id: 4, name: 'Downdetector M365', url: 'https://downdetector.pe/problemas/microsoft-365/' },
