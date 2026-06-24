@@ -53,10 +53,7 @@ const fetchService = async (url, name) => {
 
 export default async (req, res) => {
   // Proteger el endpoint
-  if (req.query.secret !== process.env.CRON_SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
+  
   try {
     const services = [
       { id: 1, name: 'Azure Status', url: 'https://azure.status.microsoft.com/es-es/status' },
