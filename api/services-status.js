@@ -21,7 +21,7 @@ export default async (req, res) => {
         {
           id: 1,
           name: 'Azure Status (Microsoft)',
-          url: 'https://azure.status.microsoft.com/es-es/status',
+          url: 'https://azure.status.microsoft.com',
           status: 'operativo',
           details: 'Esperando scraping',
           availability: 99.8,
