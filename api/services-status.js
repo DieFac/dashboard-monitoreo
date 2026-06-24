@@ -2,14 +2,38 @@ const axios = require('axios');
 
 const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
-const analyzeStatus = (html) => {
+const analyzeStatus = (html, serviceName) => {
   if (!html) return { status: 'operativo', availability: 99.5 };
   
   const lower = html.toLowerCase();
+  
+  // ANÁLISIS ESPECIAL PARA AZURE
+  if (serviceName.includes('Azure')) {
+    // Azure usa estructuras específicas
+    const hasIncidents = lower.includes('incident active') || 
+                        lower.includes('ongoing incident') ||
+                        lower.includes('service degradation') ||
+                        lower.includes('service unavailable') ||
+                        (lower.includes('impact') && lower.includes('affecting'));
+    
+    const hasWarnings = lower.includes('degraded') || 
+                       lower.includes('investigating') ||
+                       lower.includes('monitoring');
+    
+    if (hasIncidents) {
+      return { status: 'incidente', availability: 60 };
+    }
+    if (hasWarnings) {
+      return { status: 'degradado', availability: 85 };
+    }
+    return { status: 'operativo', availability: 99.8 };
+  }
+  
+  // ANÁLISIS PARA OTROS SERVICIOS
   const incidents = ['incident', 'outage', 'down', 'offline', 'affected'];
   const degraded = ['degraded', 'slow', 'issue', 'maintenance'];
   
-  const incidentCount = incidents.filter(w => lower.includes(w)).length;
+  const incidentCount = incidents.filter(w => lower.includes(w) && !lower.includes(`para ${w}`)).length;
   const degradedCount = degraded.filter(w => lower.includes(w)).length;
   
   if (incidentCount > 0) {
@@ -28,7 +52,7 @@ const fetchService = async (url, name) => {
       timeout: 8000
     });
     
-    const analysis = analyzeStatus(response.data);
+    const analysis = analyzeStatus(response.data, name);
     
     return {
       status: analysis.status,
